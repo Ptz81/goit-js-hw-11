@@ -39,7 +39,7 @@ function fetchPosts() {
     _page: page
   });
 
-  return fetch(`https://pixabay.com/api/?key={ KEY }&q={yellow+flowers}&image_type=photo`).then(
+  return fetch(`https://pixabay.com/api/?key12470042-156b4534868fdb2d637b9b4f4&q={inputValue}&image_type=photo&orientation=horizontal&safesearch=true`).then(
     (response) => {
       if (!response.ok) {
         throw new Error(response.status);
@@ -51,13 +51,29 @@ function fetchPosts() {
 
 function renderPosts(posts) {
   const markup = posts
-    .map(({ id, title, body, userId }) => {
-      return `<li>
-          <h2 class="post-title">${title.slice(0, 30)}</h2>
-          <p><b>Post id</b>: ${id}</p>
-          <p><b>Author id</b>: ${userId}</p>
-          <p class="post-body">${body}</p>
-        </li>`;
+    .map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
+      return `<a href='${largeImageURL}' class="photo-link">
+  <div class="photo-card">
+  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+  <div class="info">
+    <p class="info-item">
+      <b>Likes</b>
+      <span id="likes">${likes}</span>
+    </p>
+    <p class="info-item">
+      <b>Views</b>
+      <span id="views">${views}</span>
+    </p>
+    <p class="info-item">
+      <b>Comments</b>
+      <span id="comments">${comments}</span>
+    </p>
+    <p class="info-item">
+      <b>Downloads</b>
+      <span id="downloads">${downloads}</span>
+    </p>
+  </div>
+</div>`;
     })
     .join("");
   userList.insertAdjacentHTML("beforeend", markup);

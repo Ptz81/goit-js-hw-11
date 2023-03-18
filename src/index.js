@@ -1,5 +1,9 @@
 import './js/visual';
 import './js/scroll';
+import { getUserData } from './js/axios';
+
+import Notiflix from 'notiflix';
+import debounce from 'lodash.debounce';
 
 // Описаний в документації
 import SimpleLightbox from "simplelightbox";
@@ -7,9 +11,4 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
 
-/*
-
-import { fetchCountries } from './fetchCountries';
-import debounce from 'lodash.debounce';
-import Notiflix from 'notiflix';
-*/
+const DEBOUNCE_DELAY = 300;
