@@ -1,64 +1,91 @@
+//імпорт зовнішнього коду та бібліотек
+
 import './js/visual';
-import './js/scroll';
+// import './js/scroll';
 import { getUserData } from './js/axios';
 
 import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
 
-// Описаний в документації
+
 import SimpleLightbox from "simplelightbox";
-// Додатковий імпорт стилів
 import "simplelightbox/dist/simple-lightbox.min.css";
+
 
 
 const DEBOUNCE_DELAY = 300;
 
-
-const searchElement = document.querySelector('form');
-const btnElement = document.querySelector('button');
+//знайти елементи
+const form = document.querySelector('form');
 const input = document.querySelector('#search-bar');
 const gallery = document.querySelector('.gallery');
+const btnLoad = document.querySelector('.btnload')
+btnLoad.style.display = 'none';
 
+let page = 1;
+
+//---------------------------------------------//
 
 input.addEventListener('input', debounce(handlerPhotoSearch, DEBOUNCE_DELAY, { trailing: true }))
-btnElement.addEventListener('submit', handleFormSubmit);
+form.addEventListener('submit', handleFormSubmit);
+btnLoad.addEventListener('click', handerBtnLoad);
 
+//---------------------INPUT------------------//
 
-//функція на введення із debounce
+//функція на введення в input із debounce без перезавантаження
 function handlerPhotoSearch(e) {
-
   e.preventDefault();
 
   //у місці введення беремо дані
   const searchedPhoto = e.target.value.trim();
-  countryListElem.innerHTML = '';
-  countryInfoElem.innerHTML = '';
-  //якщо порожня стрічка виходимо
+
+  //якщо порожня стрічка виводимо повідомлення
   if (!searchedPhoto) {
-    countryListElem.innerHTML = '';
-    countryInfoElem.innerHTML = '';
-    return
+    return;
   }
 
+}
+//-------------------------------------------------//
 
-  //функція на сабміт - забороняє перевантажувати сторінку, контроль введених даних
+//функція на сабміт - забороняє перевантажувати сторінку, контроль введених даних
   function handleFormSubmit(e) {
     e.preventDefault();
-    const form = e.currentTarget;
 
-    if (!form.input.value.trim()) {
-      return alert('Please fill in all the fields in form!')
+    gallery.innerHTML = '';
+
+    const formData = input.value.trim();
+
+    if (formData) {
+      getUser(photo);
+    } else {
+      btnLoad.style.display = 'none';
     }
-
-    e.currentTarget.reset();
+    return Notiflix.Notify.failure(
+      'Sorry, No found images. Please try again.'
+    );
   }
+
+//--------------------------------------------------//
+
+const handerBtnLoad = function (e) {
+  e.preventDefault();
+  const formData = input.value.trim();
+  page++;
+  getUser(photo, page);
+}
+
+//-------------------------------------------------//
+
 
 
 
   //створення картки
-  const newElement = createElem(galleryItems);
+  const newElement = createElem(items);
   gallery.insertAdjacentHTML('beforeend', newElement);
+  lightBox.refresh();
 
+
+  //функція, що викликається на створення картки
   function createElem(item) {
 
     return item.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
@@ -89,7 +116,7 @@ function handlerPhotoSearch(e) {
       .join("");
   }
 
-  const lightbox = new SimpleLightbox('.gallery a', {
+  const lightBox = new SimpleLightbox('.gallery a', {
     captionsData: 'alt',
     captionDelay: 250
   });
@@ -98,14 +125,14 @@ function handlerPhotoSearch(e) {
 
 
 
-  const getUserData = async function getUser() {
+
+  async function getUser(photo, page) {
     try {
       const response = await axios.get(`https://pixabay.com/api/?key12470042-156b4534868fdb2d637b9b4f4&q={input.value.trim()}&image_type=photo&orientation=horizontal&safesearch=true`);
       console.log(response);
     } catch (error) {
       console.error(error);
     }
-  }
 
 
 
@@ -162,37 +189,7 @@ function handlerPhotoSearch(e) {
     );
   }
 
-  /*
-  function renderPosts(posts) {
-    const markup = posts
-      .map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
-        return `<a href='${largeImageURL}' class="photo-link">
-    <div class="photo-card">
-    <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-    <div class="info">
-      <p class="info-item">
-        <b>Likes</b>
-        <span id="likes">${likes}</span>
-      </p>
-      <p class="info-item">
-        <b>Views</b>
-        <span id="views">${views}</span>
-      </p>
-      <p class="info-item">
-        <b>Comments</b>
-        <span id="comments">${comments}</span>
-      </p>
-      <p class="info-item">
-        <b>Downloads</b>
-        <span id="downloads">${downloads}</span>
-      </p>
-    </div>
-  </div>`;
-      })
-      .join("");
-    userList.insertAdjacentHTML("beforeend", markup);
-  }
-  */
+
 
   function toggleAlertPopup() {
     if (isAlertVisible) {
@@ -210,12 +207,12 @@ function handlerPhotoSearch(e) {
 
 
 
-  const { height: cardHeight } = document
-    .querySelector(".gallery")
-    .firstElementChild.getBoundingClientRect();
+  // const { height: cardHeight } = document
+  //   .querySelector(".gallery")
+  //   .firstElementChild.getBoundingClientRect();
 
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: "smooth",
-  })
+  // window.scrollBy({
+  //   top: cardHeight * 2,
+  //   behavior: "smooth",
+  // })
 }
