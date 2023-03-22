@@ -11,6 +11,7 @@ import debounce from 'lodash.debounce';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
+import axios from 'axios';
 
 
 const DEBOUNCE_DELAY = 300;
@@ -28,7 +29,7 @@ let page = 1;
 
 input.addEventListener('input', debounce(handlerPhotoSearch, DEBOUNCE_DELAY, { trailing: true }))
 form.addEventListener('submit', handleFormSubmit);
-btnLoad.addEventListener('click', handerBtnLoad);
+btnLoad.addEventListener('click', handlerBtnLoad);
 
 //---------------------INPUT------------------//
 
@@ -40,7 +41,7 @@ function handlerPhotoSearch(e) {
   const searchedPhoto = e.target.value.trim();
 
   //якщо порожня стрічка виводимо повідомлення
-  if (!searchedPhoto) {
+  if (searchedPhoto!=='') {
     return;
   }
 
@@ -50,13 +51,13 @@ function handlerPhotoSearch(e) {
 //функція на сабміт - забороняє перевантажувати сторінку, контроль введених даних
   function handleFormSubmit(e) {
     e.preventDefault();
-
+    page = 1;
     gallery.innerHTML = '';
 
     const formData = input.value.trim();
 
-    if (formData) {
-      getUser(photo);
+    if (formData!=='') {
+      getUser(formData);
     } else {
       btnLoad.style.display = 'none';
     }
@@ -67,47 +68,58 @@ function handlerPhotoSearch(e) {
 
 //--------------------------------------------------//
 
-const handerBtnLoad = function (e) {
+ function handlerBtnLoad (e) {
   e.preventDefault();
   const formData = input.value.trim();
   page++;
-  getUser(photo, page);
+  getUser(formData, page);
 }
 
 //-------------------------------------------------//
 
+//стягуємо дані з pixabay
+async function getUser(formData, page) {
 
-
-
-  //створення картки
-  const newElement = createElem(items);
-  gallery.insertAdjacentHTML('beforeend', newElement);
-  lightBox.refresh();
+    try {
+      const response = await axios.get(`https://pixabay.com/api/?key=12470042-156b4534868fdb2d637b9b4f4&q=${formData}&image_type=photo&orientation=horizontal&safesearch=true`);
+      createElem(response.data);
+    } catch (error) {
+      console.error(error);
+    }
 
 
   //функція, що викликається на створення картки
-  function createElem(item) {
+  function createElem(items) {
 
-    return item.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
-      return `<a href='${item.largeImageURL}' class="photo-link">
+    return items
+      .map(({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads
+      }) => {
+      return `<a href='${largeImageURL}' class="photo-link">
   <div class="photo-card">
-  <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
+  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="info">
     <p class="info-item">
       <b>Likes</b>
-      <span id="likes">${item.likes}</span>
+      <span id="likes">${likes}</span>
     </p>
     <p class="info-item">
       <b>Views</b>
-      <span id="views">${item.views}</span>
+      <span id="views">${views}</span>
     </p>
     <p class="info-item">
       <b>Comments</b>
-      <span id="comments">${item.comments}</span>
+      <span id="comments">${comments}</span>
     </p>
     <p class="info-item">
       <b>Downloads</b>
-      <span id="downloads">${item.downloads}</span>
+      <span id="downloads">${downloads}</span>
     </p>
   </div>
 </div>
@@ -121,87 +133,81 @@ const handerBtnLoad = function (e) {
     captionDelay: 250
   });
 
+  //створення картки
+  const newElement = createElem(item);
+  gallery.insertAdjacentHTML('beforeend', newElement);
+  lightBox.refresh();
 
 
 
 
 
-  async function getUser(photo, page) {
-    try {
-      const response = await axios.get(`https://pixabay.com/api/?key12470042-156b4534868fdb2d637b9b4f4&q={input.value.trim()}&image_type=photo&orientation=horizontal&safesearch=true`);
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
+
+
+  // const fetchPostsBtn = document.querySelector(".btn");
 
 
 
+  // // const userList = document.querySelector(".posts");
+  // const alertPopup = document.querySelector(".alert");
+  // let isAlertVisible = false;
 
+  // // Controls the group number
+  // let page = 1;
+  // // Controls the number of items in the group
+  // let limit = 5;
+  // // In our case total number of pages is calculated on frontend
+  // const totalPages = 100 / limit;
 
-  const fetchPostsBtn = document.querySelector(".btn");
+  // fetchPostsBtn.addEventListener("click", () => {
+  //   // Check the end of the collection to display an alert
+  //   if (page > totalPages) {
+  //     return toggleAlertPopup();
+  //   }
 
+  //   fetchPosts()
+  //     .then((posts) => {
+  //       renderPosts(posts);
+  //       // Increase the group number
+  //       page += 1;
 
+  //       // Replace button text after first request
+  //       if (page > 1) {
+  //         fetchPostsBtn.textContent = "Load more";
+  //       }
+  //     })
+  //     .catch((error) => console.log(error));
+  // });
 
-  // const userList = document.querySelector(".posts");
-  const alertPopup = document.querySelector(".alert");
-  let isAlertVisible = false;
+  // function fetchPosts() {
+  //   const params = new URLSearchParams({
+  //     _limit: limit,
+  //     _page: page
+  //   });
 
-  // Controls the group number
-  let page = 1;
-  // Controls the number of items in the group
-  let limit = 5;
-  // In our case total number of pages is calculated on frontend
-  const totalPages = 100 / limit;
-
-  fetchPostsBtn.addEventListener("click", () => {
-    // Check the end of the collection to display an alert
-    if (page > totalPages) {
-      return toggleAlertPopup();
-    }
-
-    fetchPosts()
-      .then((posts) => {
-        renderPosts(posts);
-        // Increase the group number
-        page += 1;
-
-        // Replace button text after first request
-        if (page > 1) {
-          fetchPostsBtn.textContent = "Load more";
-        }
-      })
-      .catch((error) => console.log(error));
-  });
-
-  function fetchPosts() {
-    const params = new URLSearchParams({
-      _limit: limit,
-      _page: page
-    });
-
-    return fetch(`https://pixabay.com/api/?key12470042-156b4534868fdb2d637b9b4f4&q={inputValue}&image_type=photo&orientation=horizontal&safesearch=true`).then(
-      (response) => {
-        if (!response.ok) {
-          throw new Error(response.status);
-        }
-        return response.json();
-      }
-    );
-  }
+  //   return fetch(`https://pixabay.com/api/?key12470042-156b4534868fdb2d637b9b4f4&q={inputValue}&image_type=photo&orientation=horizontal&safesearch=true`).then(
+  //     (response) => {
+  //       if (!response.ok) {
+  //         throw new Error(response.status);
+  //       }
+  //       return response.json();
+  //     }
+  //   );
+  // }
 
 
 
-  function toggleAlertPopup() {
-    if (isAlertVisible) {
-      return;
-    }
-    isAlertVisible = true;
-    alertPopup.classList.add("is-visible");
-    setTimeout(() => {
-      alertPopup.classList.remove("is-visible");
-      isAlertVisible = false;
-    }, 3000);
-  }
+  // function toggleAlertPopup() {
+  //   if (isAlertVisible) {
+  //     return;
+  //   }
+  //   isAlertVisible = true;
+  //   alertPopup.classList.add("is-visible");
+  //   setTimeout(() => {
+  //     alertPopup.classList.remove("is-visible");
+  //     isAlertVisible = false;
+  //   }, 3000);
+  // }
 
 
 
