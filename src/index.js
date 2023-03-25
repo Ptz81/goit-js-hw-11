@@ -1,94 +1,195 @@
 //імпорт зовнішнього коду та бібліотек
 
-import './js/visual';
+// import './js/visual';
 // import './js/scroll';
-import { getUserData } from './js/axios';
-
+import { PixabayApi } from './js/axios';
 import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
-
-
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-
 import axios from 'axios';
 
 
-const DEBOUNCE_DELAY = 300;
 
 //знайти елементи
 const form = document.querySelector('form');
 const input = document.querySelector('#search-bar');
 const gallery = document.querySelector('.gallery');
-const btnLoad = document.querySelector('.btnload')
+const btnLoad = document.querySelector('.btnload');
 btnLoad.style.display = 'none';
 
-let page = 1;
+const lightBox = new SimpleLightbox('.gallery a', {
+    captionsData: 'alt',
+    captionDelay: 250
+  });
 
-//---------------------------------------------//
+const DEBOUNCE_DELAY = 300;
+const pixabayApi = new PixabayApi();
 
-input.addEventListener('input', debounce(handlerPhotoSearch, DEBOUNCE_DELAY, { trailing: true }))
+
+
+input.addEventListener('input', debounce(handlePhotoSearch, DEBOUNCE_DELAY, { trailing: true }));
 form.addEventListener('submit', handleFormSubmit);
-btnLoad.addEventListener('click', handlerBtnLoad);
+btnLoad.addEventListener('click', handleLoadMore);
 
-//---------------------INPUT------------------//
 
 //функція на введення в input із debounce без перезавантаження
-function handlerPhotoSearch(e) {
+function handlePhotoSearch(e) {
   e.preventDefault();
-
-  //у місці введення беремо дані
   const searchedPhoto = e.target.value.trim();
-
-  //якщо порожня стрічка виводимо повідомлення
-  if (searchedPhoto!=='') {
+  if (searchedPhoto === '') {
     return;
   }
-
 }
+
 //-------------------------------------------------//
 
 //функція на сабміт - забороняє перевантажувати сторінку, контроль введених даних
-  function handleFormSubmit(e) {
-    e.preventDefault();
-    page = 1;
-    gallery.innerHTML = '';
+// async function handleFormSubmit(e) {
+//   e.preventDefault();
+//   const searchQuery = e.target.elements[0].value.trim()
+//   pixabayApi.q = searchQuery;
+//   pixabayApi.fetchPhotos().then(
+//     data => {
+//       if (!data.results.length) {
+//         throw new Error();
+//       }
+//       gallery.innerHTML = createElem(data.results);
 
-    const formData = input.value.trim();
+//       if (data.total_pages === pixabayApi.page) {
+//         return;
+//       }
 
-    if (formData!=='') {
-      getUser(formData);
-    } else {
-      btnLoad.style.display = 'none';
-    }
-    return Notiflix.Notify.failure(
-      'Sorry, No found images. Please try again.'
-    );
-  }
+//       btnLoad.classList.remove('is-hidden')
+//     })
+//     .catch(() => {
+//       btnLoad.classList.add('is-hidden');
+//       gallery.textContent = 'Images not found';
+//     });
+// async function handleFormSubmit(e) {
+//   e.preventDefault();
+//   const searchQuery = e.target.elements[0].value.trim()
+//   pixabayApi.q = searchQuery;
+//   let data;
+//   try {
+//     data = await pixabayApi.fetchPhotos();
+//   } catch (error) {
+//     console.error(error);
+//   }
+//   if (!data.results.length) {
+//     gallery.textContent = 'Images not found';
+//     btnLoad.classList.add('is-hidden');
+//     return;
+//   }
+//   gallery.innerHTML = createElem(data.results);
 
-//--------------------------------------------------//
+//   if (data.total_pages === pixabayApi.page) {
+//     btnLoad.classList.add('is-hidden');
+//     return;
+//   }
+//   btnLoad.classList.remove('is-hidden')
+// }
 
- function handlerBtnLoad (e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
-  const formData = input.value.trim();
-  page++;
-  getUser(formData, page);
+  const searchQuery = e.target.elements[0].value.trim();
+  pixabayApi.q = searchQuery;
+  let data;
+  try {
+    data = await pixabayApi.fetchPhotos();
+  } catch (error) {
+    console.error(error);
+  }
+  updateGallery(data);
 }
+
+function updateGallery(data) {
+  if (!data.results.length) {
+    gallery.textContent = 'Images not found';
+    btnLoad.classList.add('is-hidden');
+    return;
+  }
+  gallery.innerHTML = createElements(data.results);
+
+  if (data.total_pages === pixabayApi.page) {
+    btnLoad.classList.add('is-hidden');
+    return;
+  }
+  btnLoad.classList.remove('is-hidden');
+}
+
+  //   const formData = input.value.trim();
+
+  //   if (formData!=='') {
+  //     getUser(formData);
+  //   } else {
+  //     btnLoad.style.display = 'none';
+  //   }
+  //   return Notiflix.Notify.failure(
+  //     'Sorry, No found images. Please try again.'
+  //   );
+  // }
+
+  //--------------------------------------------------//
+
+//   const handleLoadMore = async function(){
+//     pixabayApi.page += 1;
+
+//     {
+//       const { picture } = await pixabayApi.fetchPhotos();
+
+//       gallery.insertAdjacentHTML('beforeend', createElem(picture));
+
+//       if (pixabayApi.page === data.total_pages){
+//       btnLoad.classList.add('is-hidden');
+//       }
+//     }
+//   };
+
+
+
+const handleLoadMore = async function() {
+  pixabayApi.page += 1;
+
+  try {
+    const data = await pixabayApi.fetchPhotos();
+    gallery.insertAdjacentHTML('beforeend', createElem(data.results));
+    if (pixabayApi.page === data.total_pages) {
+      btnLoad.classList.add('is-hidden');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+    //--------------------------------------------------//
+
+//  function handlerBtnLoad (e) {
+//   e.preventDefault();
+//   const formData = input.value.trim();
+//   page++;
+//   getUser(formData, page);
+// }
 
 //-------------------------------------------------//
 
 //стягуємо дані з pixabay
-async function getUser(formData, page) {
+// async function getUser(formData, page) {
 
-    try {
-      const response = await axios.get(`https://pixabay.com/api/?key=12470042-156b4534868fdb2d637b9b4f4&q=${formData}&image_type=photo&orientation=horizontal&safesearch=true`);
-      createElem(response.data);
-    } catch (error) {
-      console.error(error);
-    }
+//     try {
+//       const response = await axios.get(`https://pixabay.com/api/?key=12470042-156b4534868fdb2d637b9b4f4&q=${formData}&image_type=photo&orientation=horizontal&safesearch=true`);
+//       createElem(response.data);
+//     } catch (error) {
+//       console.error(error);
+//     }
 
 
   //функція, що викликається на створення картки
+
+
+
+
+
   function createElem(items) {
 
     return items
@@ -128,18 +229,22 @@ async function getUser(formData, page) {
       .join("");
   }
 
-  const lightBox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250
-  });
+
 
   //створення картки
-  const newElement = createElem(item);
+  const newElement = createElem(data);
   gallery.insertAdjacentHTML('beforeend', newElement);
   lightBox.refresh();
 
 
+  const { height: cardHeight } = document
+    .querySelector(".gallery")
+    .firstElementChild.getBoundingClientRect();
 
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: "smooth",
+  })
 
 
 
@@ -213,12 +318,5 @@ async function getUser(formData, page) {
 
 
 
-  // const { height: cardHeight } = document
-  //   .querySelector(".gallery")
-  //   .firstElementChild.getBoundingClientRect();
 
-  // window.scrollBy({
-  //   top: cardHeight * 2,
-  //   behavior: "smooth",
-  // })
-}
+// }
