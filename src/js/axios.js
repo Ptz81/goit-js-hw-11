@@ -1,4 +1,4 @@
-
+import axios from 'axios';
 export class PixabayApi {
   #BASE_URL = 'https://pixabay.com/api/';
 
@@ -12,6 +12,9 @@ export class PixabayApi {
   q = '';
   page = 1;
 
+  pageDetection() {
+    return this.page * this.#BASE_SEARCH_PARAMS.per_page;
+  }
 
   async fetchPhotos() {
     const searchParams = new URLSearchParams({

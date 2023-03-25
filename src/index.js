@@ -13,7 +13,7 @@ import axios from 'axios';
 
 //знайти елементи
 const form = document.querySelector('form');
-const input = document.querySelector('#search-bar');
+// const input = document.querySelector('#search-bar');
 const gallery = document.querySelector('.gallery');
 const btnLoad = document.querySelector('.btnload');
 btnLoad.style.display = 'none';
@@ -26,21 +26,109 @@ const lightBox = new SimpleLightbox('.gallery a', {
 const DEBOUNCE_DELAY = 300;
 const pixabayApi = new PixabayApi();
 
-
-
-input.addEventListener('input', debounce(handlePhotoSearch, DEBOUNCE_DELAY, { trailing: true }));
 form.addEventListener('submit', handleFormSubmit);
 btnLoad.addEventListener('click', handleLoadMore);
 
 
-//функція на введення в input із debounce без перезавантаження
-function handlePhotoSearch(e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
-  const searchedPhoto = e.target.value.trim();
-  if (searchedPhoto === '') {
+  const searchQuery = e.target.elements[0].value.trim();
+  pixabayApi.q = searchQuery;
+  let data;
+  try {
+    data = await pixabayApi.fetchPhotos();
+  } catch (error) {
+    console.error(error);
+  }
+  updateGallery(data);
+}
+
+function updateGallery(data) {
+  if (!data.hits.length) {
+    gallery.innerHTML = '<p class="no-results">Images not found</p>';
+    btnLoad.style.display = 'none';
     return;
   }
+  gallery.insertAdjacentHTML('beforeend', createElements(data.hits));
+  lightBox.refresh();
+
+  if (data.totalHits <= pixabayApi.page * pixabayApi.pageDetection()) {
+    btnLoad.style.display = 'none';
+  } else {
+    btnLoad.style.display = 'block';
+  }
 }
+
+async function handleLoadMore() {
+  pixabayApi.page += 1;
+  let data;
+  try {
+    data = await pixabayApi.fetchPhotos();
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+  updateGallery(data);
+
+
+function createElements(items) {
+  return items.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
+    return `<a href="${largeImageURL}" class="photo-link">
+              <div class="photo-card">
+                <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+                <div class="info">
+                  <p class="info-item">
+                    <b>Likes</b>
+                    <span id="likes">${likes}</span>
+                  </p>
+                  <p class="info-item">
+                    <b>Views</b>
+                    <span id="views">${views}</span>
+                  </p>
+                  <p class="info-item">
+                    <b>Comments</b>
+                    <span id="comments">${comments}</span>
+                  </p>
+                  <p class="info-item">
+                    <b>Downloads</b>
+                    <span id="downloads">${downloads}</span>
+                  </p>
+                </div>
+              </div>
+            </a>`;
+  }).join('');
+}
+
+
+const newElements = createElements(data.results);
+  gallery.insertAdjacentHTML('beforeend', newElements);
+  lightBox.refresh();
+
+
+  const { height: cardHeight } = document
+    .querySelector(".gallery")
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: "smooth",
+  })
+}
+
+
+
+// input.addEventListener('input', debounce(handlePhotoSearch, DEBOUNCE_DELAY, { trailing: true }));
+
+
+
+//функція на введення в input із debounce без перезавантаження
+// function handlePhotoSearch(e) {
+//   e.preventDefault();
+//   const searchedPhoto = e.target.value.trim();
+//   if (searchedPhoto === '') {
+//     return;
+//   }
+// }
 
 //-------------------------------------------------//
 
@@ -90,34 +178,6 @@ function handlePhotoSearch(e) {
 //   btnLoad.classList.remove('is-hidden')
 // }
 
-async function handleFormSubmit(e) {
-  e.preventDefault();
-  const searchQuery = e.target.elements[0].value.trim();
-  pixabayApi.q = searchQuery;
-  let data;
-  try {
-    data = await pixabayApi.fetchPhotos();
-  } catch (error) {
-    console.error(error);
-  }
-  updateGallery(data);
-}
-
-function updateGallery(data) {
-  if (!data.results.length) {
-    gallery.textContent = 'Images not found';
-    btnLoad.classList.add('is-hidden');
-    return;
-  }
-  gallery.innerHTML = createElements(data.results);
-
-  if (data.total_pages === pixabayApi.page) {
-    btnLoad.classList.add('is-hidden');
-    return;
-  }
-  btnLoad.classList.remove('is-hidden');
-}
-
   //   const formData = input.value.trim();
 
   //   if (formData!=='') {
@@ -148,19 +208,19 @@ function updateGallery(data) {
 
 
 
-const handleLoadMore = async function() {
-  pixabayApi.page += 1;
+// const handleLoadMore = async function() {
+//   pixabayApi.page += 1;
 
-  try {
-    const data = await pixabayApi.fetchPhotos();
-    gallery.insertAdjacentHTML('beforeend', createElem(data.results));
-    if (pixabayApi.page === data.total_pages) {
-      btnLoad.classList.add('is-hidden');
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
+//   try {
+//     const data = await pixabayApi.fetchPhotos();
+//     gallery.insertAdjacentHTML('beforeend', createElem(data.results));
+//     if (pixabayApi.page === data.total_pages) {
+//       btnLoad.classList.add('is-hidden');
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
     //--------------------------------------------------//
 
@@ -188,64 +248,61 @@ const handleLoadMore = async function() {
 
 
 
+//   function createElem(items) {
 
-
-  function createElem(items) {
-
-    return items
-      .map(({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads
-      }) => {
-      return `<a href='${largeImageURL}' class="photo-link">
-  <div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>
-      <span id="likes">${likes}</span>
-    </p>
-    <p class="info-item">
-      <b>Views</b>
-      <span id="views">${views}</span>
-    </p>
-    <p class="info-item">
-      <b>Comments</b>
-      <span id="comments">${comments}</span>
-    </p>
-    <p class="info-item">
-      <b>Downloads</b>
-      <span id="downloads">${downloads}</span>
-    </p>
-  </div>
-</div>
-</a>`;
-    })
-      .join("");
-  }
+//     return items
+//       .map(({
+//         webformatURL,
+//         largeImageURL,
+//         tags,
+//         likes,
+//         views,
+//         comments,
+//         downloads
+//       }) => {
+//       return `<a href='${largeImageURL}' class="photo-link">
+//   <div class="photo-card">
+//   <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+//   <div class="info">
+//     <p class="info-item">
+//       <b>Likes</b>
+//       <span id="likes">${likes ?? 0}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Views</b>
+//       <span id="views">${views ?? 0}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Comments</b>
+//       <span id="comments">${comments ?? 0}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Downloads</b>
+//       <span id="downloads">${downloads ?? 0}</span>
+//     </p>
+//   </div>
+// </div>
+// </a>`;
+//     })
+//       .join("");
+//   }
 
 
 
   //створення картки
-  const newElement = createElem(data);
-  gallery.insertAdjacentHTML('beforeend', newElement);
-  lightBox.refresh();
+  // const newElement = createElem(data);
+  // gallery.insertAdjacentHTML('beforeend', newElement);
+  // lightBox.refresh();
 
 
-  const { height: cardHeight } = document
-    .querySelector(".gallery")
-    .firstElementChild.getBoundingClientRect();
+  // const { height: cardHeight } = document
+  //   .querySelector(".gallery")
+  //   .firstElementChild.getBoundingClientRect();
 
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: "smooth",
-  })
-
+  // window.scrollBy({
+  //   top: cardHeight * 2,
+  //   behavior: "smooth",
+  // })
 
 
 
