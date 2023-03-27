@@ -1,23 +1,60 @@
 
 .gallery {
-  // display: grid;
+
   display: flex;
   flex-wrap: wrap;
- margin-top: 400px;
-  // max-width: 1140px;
-  // grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  // grid-auto-rows: 240px;
-  // grid-gap: 12px;
+  margin: 0 auto 0;
   justify-content: center;
-  padding: 0;
-  list-style: none;
-  margin-left: auto;
-  margin-right: auto;
+
 }
 
 .photo-link {
   position: relative;
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2),
     0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12);
-}
+display: block;
+  margin: 10px auto;
+  flex-basis: calc(20% - 20px);
+  border-width: 1px;
+  border-color: grey;
+  border-radius: 20px;
+  text-decoration: none;
+  }
 
+
+
+
+
+
+    .img-item {
+      display: flex;
+      justify-content: center;
+      border: 1px gray;
+      width: 100%;
+      height: 200px;
+    }
+
+    .info {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+
+      color: #121212;
+      background-color: rgb(238, 238, 238);
+      border-radius: 0 0 5px 5px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      padding: 0 10px;
+
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+        'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.4;
+      font-size: 0.7em;
+    }

@@ -1,24 +1,30 @@
+@import '~node_modules/modern-normalize/modern-normalize.css';
 @import url(https://fonts.googleapis.com/css?family=Cabin:400);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
 
+body {
+  background: #151515;
+}
 
 .webdesigntuts-workshop {
-
   height: auto;
-  // position: absolute;
-position: fixed;
+  position: absolute;
   text-align: center;
   width: 100%;
-  z-index: 10;
-  
 }
 
 .webdesigntuts-workshop:before,
 .webdesigntuts-workshop:after {
-  content: '';
+  content: "";
   display: block;
   height: 1px;
   left: 50%;
-  margin: -120px 0 0 -400px;
+  margin: 0 0 0 -400px;
   position: absolute;
   width: 800px;
 }
@@ -43,7 +49,7 @@ position: fixed;
   box-shadow: inset 0 0 0 1px #272727;
   display: inline-block;
   font-size: 0px;
-  margin: 30px auto 0;
+  margin: 150px auto 0;
   padding: 20px;
   position: relative;
   z-index: 1;
@@ -55,10 +61,10 @@ position: fixed;
   border: 1px solid #444;
   border-radius: 5px 0 0 5px;
   box-shadow: 0 2px 0 #000;
-  color: #fafafa;
+  color: #888;
   display: block;
   float: left;
-  font-family: 'Cabin', helvetica, arial, sans-serif;
+  font-family: "Cabin", helvetica, arial, sans-serif;
   font-size: 13px;
   font-weight: 400;
   height: 40px;
@@ -73,11 +79,11 @@ position: fixed;
 }
 
 .webdesigntuts-workshop input::-webkit-input-placeholder {
-  color: #fafafa;
+  color: #888;
 }
 
 .webdesigntuts-workshop input:-moz-placeholder {
-  color: #fafafa;
+  color: #888;
 }
 
 .webdesigntuts-workshop input:focus {
@@ -85,7 +91,7 @@ position: fixed;
   background: #222922;
   background: linear-gradient(#333933, #222922);
   border-color: #393;
-  box-shadow: 0 0 5px rgba(0, 255, 0, .2), inset 0 0 5px rgba(0, 255, 0, .1), 0 2px 0 #000;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.2), inset 0 0 5px rgba(0, 255, 0, 0.1), 0 2px 0 #000;
   color: #efe;
   outline: none;
 }
@@ -109,7 +115,7 @@ position: fixed;
   color: #fff;
   display: block;
   float: left;
-  font-family: 'Cabin', helvetica, arial, sans-serif;
+  font-family: "Cabin", helvetica, arial, sans-serif;
   font-size: 13px;
   font-weight: 400;
   height: 40px;
@@ -139,11 +145,25 @@ position: fixed;
 @keyframes glow {
   0% {
     border-color: #393;
-    box-shadow: 0 0 5px rgba(0, 255, 0, .2), inset 0 0 5px rgba(0, 255, 0, .1), 0 2px 0 #000;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.2), inset 0 0 5px rgba(0, 255, 0, 0.1), 0 2px 0 #000;
   }
-
   100% {
     border-color: #6f6;
-    box-shadow: 0 0 20px rgba(0, 255, 0, .6), inset 0 0 10px rgba(0, 255, 0, .4), 0 2px 0 #000;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), inset 0 0 10px rgba(0, 255, 0, 0.4), 0 2px 0 #000;
   }
+}
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 400px;
+  justify-content: center;
+  padding: 0;
+  list-style: none;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.photo-link {
+  position: relative;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12);
 }

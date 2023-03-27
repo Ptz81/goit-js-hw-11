@@ -1,6 +1,6 @@
 //імпорт зовнішнього коду та бібліотек
 
-// import './js/visual';
+
 // import './js/scroll';
 import { PixabayApi } from './js/axios';
 import Notiflix from 'notiflix';
