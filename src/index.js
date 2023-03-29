@@ -14,6 +14,7 @@ import axios from 'axios';
 //знайти елементи
 const form = document.querySelector('form');
 // const input = document.querySelector('#search-bar');
+const resetBtn = document.querySelector('.btn-clear');
 const gallery = document.querySelector('.gallery');
 const btnLoad = document.querySelector('.btnload');
 btnLoad.style.display = 'none';
@@ -28,7 +29,7 @@ const pixabayApi = new PixabayApi();
 
 form.addEventListener('submit', handleFormSubmit);
 btnLoad.addEventListener('click', handleLoadMore);
-
+resetBtn.addEventListener('click', handleReset);
 
 function createElements(items) {
   return items.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
@@ -61,29 +62,41 @@ function createElements(items) {
 
 
 
+
+
 async function handleFormSubmit(e) {
   e.preventDefault();
   const searchQuery = e.target.elements[0].value.trim();
-  pixabayApi.q = searchQuery;
+
   let data;
 
   if (searchQuery == '') {
-
+    gallery.innerHTML = '';
     return Notiflix.Notify.failure(
       'Please, enter your request.'
     );
-}
+  }
 
+  pixabayApi.q = searchQuery;
   try {
     data = await pixabayApi.fetchPhotos();
     Notiflix.Notify.success(`Hooray! We found something interesting.`);
+
     // gallery.insertAdjacentHTML('beforeend', createElements(data.results));
   } catch (error) {
     console.error(error);
   }
   updateGallery(data);
-  // clearPage();
+  e.target.elements[0].value = '';
 }
+
+
+function handleReset() {
+  form.reset();
+  gallery.innerHTML = '';
+  btnLoad.style.display = 'none';
+}
+
 
 
 function updateGallery(data) {

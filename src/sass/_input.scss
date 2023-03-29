@@ -104,7 +104,7 @@ position: fixed;
   box-sizing: border-box;
   border: 1px solid #444;
   border-left-color: #000;
-  border-radius: 0 5px 5px 0;
+  border-radius: 0 0px 0px 0;
   box-shadow: 0 2px 0 #000;
   color: #fff;
   display: block;
@@ -120,6 +120,8 @@ position: fixed;
   text-shadow: 0 -1px 0 #000;
   width: 80px;
 }
+
+
 
 .webdesigntuts-workshop button:hover,
 .webdesigntuts-workshop button:focus {
@@ -151,13 +153,24 @@ position: fixed;
 //------------button---------//
 
 .btnload{
-  display: block;
-  text-align: center;
-  margin: 20px auto;
-    width: 100px;
+  background: #fff;
+    background: linear-gradient(#333, #222);
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-left-color: #000;
+    border-radius: 0 0px 0px 0;
+    box-shadow: 0 2px 0 #000;
+    color: #222;
+    display: block;
+    float: left;
+    font-family: 'Cabin', helvetica, arial, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
     height: 40px;
-    background-color: #fff;
-      color: #121212;
-      border-color: white;
-      border-radius: 5px 5px 5px 5px;
+    line-height: 40px;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    text-shadow: 0 -1px 0 #000;
+    width: 80px;
 }
