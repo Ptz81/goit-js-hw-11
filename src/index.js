@@ -14,7 +14,7 @@ import axios from 'axios';
 //знайти елементи
 const form = document.querySelector('form');
 // const input = document.querySelector('#search-bar');
-const resetBtn = document.querySelector('.btn-clear');
+// const resetBtn = document.querySelector('.btn-clear');
 const gallery = document.querySelector('.gallery');
 const btnLoad = document.querySelector('.btnload');
 btnLoad.style.display = 'none';
@@ -29,7 +29,7 @@ const pixabayApi = new PixabayApi();
 
 form.addEventListener('submit', handleFormSubmit);
 btnLoad.addEventListener('click', handleLoadMore);
-resetBtn.addEventListener('click', handleReset);
+// resetBtn.addEventListener('click', handleReset);
 
 function createElements(items) {
   return items.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
@@ -57,7 +57,7 @@ function createElements(items) {
               </div>
             </a>`;
   }).join('');
-  // lightBox.refresh();
+
 }
 
 
@@ -66,11 +66,9 @@ function createElements(items) {
 
 async function handleFormSubmit(e) {
   e.preventDefault();
-  const searchQuery = e.target.elements[0].value.trim();
+  const searchQuery = e.target.elements['search-bar'].value.trim();
 
-  let data;
-
-  if (searchQuery == '') {
+  if (searchQuery === '') {
     gallery.innerHTML = '';
     return Notiflix.Notify.failure(
       'Please, enter your request.'
@@ -79,23 +77,30 @@ async function handleFormSubmit(e) {
 
   pixabayApi.q = searchQuery;
   try {
-    data = await pixabayApi.fetchPhotos();
-    Notiflix.Notify.success(`Hooray! We found something interesting.`);
+    //очистимо рядок
+    gallery.innerHTML = '';
 
-    // gallery.insertAdjacentHTML('beforeend', createElements(data.results));
+    //завантажимо фото
+   const data = await pixabayApi.fetchPhotos();
+    Notiflix.Notify.success(`Hooray! We found something interesting.`);
+// оновимо  розмітку
+    updateGallery(data);
+
+    // очистимо пошук 
+    e.target.elements['search-bar'].value = '';
   } catch (error) {
     console.error(error);
   }
-  updateGallery(data);
-  e.target.elements[0].value = '';
+
+
 }
 
 
-function handleReset() {
-  form.reset();
-  gallery.innerHTML = '';
-  btnLoad.style.display = 'none';
-}
+// function handleReset() {
+//   form.reset();
+//   gallery.innerHTML = '';
+//   btnLoad.style.display = 'none';
+// }
 
 
 
@@ -109,7 +114,7 @@ function updateGallery(data) {
   }
   gallery.insertAdjacentHTML('beforeend', createElements(data.hits));
   lightBox.refresh();
-// clearPage();
+
   if (data.totalHits <= pixabayApi.page * pixabayApi.pageDetection()) {
     btnLoad.style.display = 'none';
   } else {
