@@ -13,7 +13,6 @@ import axios from 'axios';
 
 //знайти елементи
 const form = document.querySelector('form');
-// const input = document.querySelector('#search-bar');
 // const resetBtn = document.querySelector('.btn-clear');
 const gallery = document.querySelector('.gallery');
 const btnLoad = document.querySelector('.btnload');
@@ -24,12 +23,15 @@ const lightBox = new SimpleLightbox('.gallery a', {
     captionDelay: 250
   });
 
-
+let data;
 const pixabayApi = new PixabayApi();
 
 form.addEventListener('submit', handleFormSubmit);
 btnLoad.addEventListener('click', handleLoadMore);
 // resetBtn.addEventListener('click', handleReset);
+
+
+//формування розмітки по запиту
 
 function createElements(items) {
   return items.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
@@ -60,21 +62,22 @@ function createElements(items) {
 
 }
 
-
-
-
+//асинхронна функція на submit
 
 async function handleFormSubmit(e) {
-  e.preventDefault();
-  const searchQuery = e.target.elements['search-bar'].value.trim();
+  e.preventDefault(); //щоб сторінка не перевантажувалась
+  const searchQuery = e.target.elements['search-bar'].value.trim(); //значення інпут записуємо у змінну
 
+  //перевіряємо чи не пустий рядок
   if (searchQuery === '') {
     gallery.innerHTML = '';
+    btnLoad.style.display = 'none';
     return Notiflix.Notify.failure(
       'Please, enter your request.'
     );
   }
 
+  //значення інпуту записуємо у значення запиту через клас
   pixabayApi.q = searchQuery;
   try {
     //очистимо рядок
@@ -82,29 +85,30 @@ async function handleFormSubmit(e) {
 
     //завантажимо фото
    const data = await pixabayApi.fetchPhotos();
-    Notiflix.Notify.success(`Hooray! We found something interesting.`);
+
 // оновимо  розмітку
     updateGallery(data);
 
-    // очистимо пошук 
+    // Notiflix.Notify.success(`Hooray! We found something interesting.`);
+
+
+    // очистимо пошук
     e.target.elements['search-bar'].value = '';
   } catch (error) {
-    console.error(error);
+    Notiflix.Notify.failure('Something went wrong! An error!');
   }
 
 
 }
 
 
-// function handleReset() {
-//   form.reset();
-//   gallery.innerHTML = '';
-//   btnLoad.style.display = 'none';
-// }
 
-
+//функція на перевірку даних та оновлення галереї
 
 function updateGallery(data) {
+
+
+
   if (!data.hits.length) {
      Notiflix.Notify.failure(
       'Sorry, there are no images matching on your request. Please try again.'
@@ -115,10 +119,13 @@ function updateGallery(data) {
   gallery.insertAdjacentHTML('beforeend', createElements(data.hits));
   lightBox.refresh();
 
+
   if (data.totalHits <= pixabayApi.page * pixabayApi.pageDetection()) {
     btnLoad.style.display = 'none';
+    Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
   } else {
     btnLoad.style.display = 'block';
+    Notiflix.Notify.success(`'Hooray! We found ${data.totalHits} images.'`);
   }
 
 }
@@ -127,14 +134,15 @@ function updateGallery(data) {
 
 async function handleLoadMore() {
   pixabayApi.page += 1;
-  let data;
+  // let data;
   try {
-    data = await pixabayApi.fetchPhotos();
+   const data = await pixabayApi.fetchPhotos();
+updateGallery(data);
   } catch (error) {
      Notify.failure('Error! Something went wrong!');
     return;
   }
-  updateGallery(data);
+
 
 const newElements = createElements(data.results);
   gallery.insertAdjacentHTML('beforeend', newElements);
@@ -152,3 +160,11 @@ const newElements = createElements(data.results);
 //     behavior: "smooth",
 //   })
 }
+
+
+
+// function handleReset() {
+//   form.reset();
+//   gallery.innerHTML = '';
+//   btnLoad.style.display = 'none';
+// }
