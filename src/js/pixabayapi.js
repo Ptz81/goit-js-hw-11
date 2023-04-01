@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 export class PixabayApi {
   #BASE_URL = 'https://pixabay.com/api/';
 
@@ -11,10 +12,20 @@ export class PixabayApi {
   }
   q = '';
   page = 1;
+  totalPages = 0;
 
   pageDetection() {
     return this.page * this.#BASE_SEARCH_PARAMS.per_page;
   }
+
+ checkPages() {
+    return this.page < Math.ceil(this.totalPages/this.#BASE_SEARCH_PARAMS.per_page);
+ }
+
+  reset() {
+    return this.page = 1;
+  }
+
 
   async fetchPhotos() {
     const searchParams = new URLSearchParams({

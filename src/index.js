@@ -2,13 +2,13 @@
 
 
 // import './js/scroll';
-import { PixabayApi } from './js/axios';
+import { PixabayApi } from './js/pixabayapi';
 import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-import axios from 'axios';
-
+// import axios from 'axios';
+import {createElements} from './js/markup'
 
 
 //знайти елементи
@@ -30,48 +30,22 @@ form.addEventListener('submit', handleFormSubmit);
 btnLoad.addEventListener('click', handleLoadMore);
 // resetBtn.addEventListener('click', handleReset);
 
-
-//формування розмітки по запиту
-
-function createElements(items) {
-  return items.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
-    return `<a href="${largeImageURL}" class="photo-link">
-              <div class="photo-card">
-                <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-                <div class="info">
-                  <p class="info-item">
-                    <b>Likes</b>
-                    <span id="likes">${likes}</span>
-                  </p>
-                  <p class="info-item">
-                    <b>Views</b>
-                    <span id="views">${views}</span>
-                  </p>
-                  <p class="info-item">
-                    <b>Comments</b>
-                    <span id="comments">${comments}</span>
-                  </p>
-                  <p class="info-item">
-                    <b>Downloads</b>
-                    <span id="downloads">${downloads}</span>
-                  </p>
-                </div>
-              </div>
-            </a>`;
-  }).join('');
-
+function reset() {
+  pixabayApi.reset();
+  gallery.innerHTML = '';
+  btnLoad.style.display = 'none';
 }
+
 
 //асинхронна функція на submit
 
 async function handleFormSubmit(e) {
   e.preventDefault(); //щоб сторінка не перевантажувалась
-  const searchQuery = e.target.elements['search-bar'].value.trim(); //значення інпут записуємо у змінну
+  const searchQuery = e.target.elements['searchQuery'].value.toLowerCase().trim(); //значення інпут записуємо у змінну
 
   //перевіряємо чи не пустий рядок
   if (searchQuery === '') {
-    gallery.innerHTML = '';
-    btnLoad.style.display = 'none';
+    reset();
     return Notiflix.Notify.failure(
       'Please, enter your request.'
     );
@@ -81,8 +55,8 @@ async function handleFormSubmit(e) {
   pixabayApi.q = searchQuery;
   try {
     //очистимо рядок
-    gallery.innerHTML = '';
-
+    // gallery.innerHTML = '';
+reset();
     //завантажимо фото
    const data = await pixabayApi.fetchPhotos();
 
@@ -96,6 +70,7 @@ async function handleFormSubmit(e) {
     e.target.elements['search-bar'].value = '';
   } catch (error) {
     Notiflix.Notify.failure('Something went wrong! An error!');
+    reset();
   }
 
 
@@ -112,8 +87,9 @@ function updateGallery(data) {
   if (!data.hits.length) {
      Notiflix.Notify.failure(
       'Sorry, there are no images matching on your request. Please try again.'
-    );
-    btnLoad.style.display = 'none';
+     );
+    reset();
+    // btnLoad.style.display = 'none';
     return;
   }
   gallery.insertAdjacentHTML('beforeend', createElements(data.hits));
@@ -121,7 +97,9 @@ function updateGallery(data) {
 
 
   if (data.totalHits <= pixabayApi.page * pixabayApi.pageDetection()) {
+  // if(pixabayApi.checkPages){
     btnLoad.style.display = 'none';
+    // reset();
     Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
   } else {
     btnLoad.style.display = 'block';
@@ -139,7 +117,9 @@ async function handleLoadMore() {
    const data = await pixabayApi.fetchPhotos();
 updateGallery(data);
   } catch (error) {
-     Notify.failure('Error! Something went wrong!');
+    Notify.failure('Error! Something went wrong!');
+
+    reset();
     return;
   }
 
