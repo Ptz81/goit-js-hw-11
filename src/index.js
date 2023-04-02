@@ -89,18 +89,19 @@ function updateGallery(data) {
       'Sorry, there are no images matching on your request. Please try again.'
      );
     reset();
-    // btnLoad.style.display = 'none';
     return;
   }
   gallery.insertAdjacentHTML('beforeend', createElements(data.hits));
   lightBox.refresh();
 
+  pixabayApi.totalPages = pixabayApi.pageDetection(data.totalHits);
 
-  if (data.totalHits <= pixabayApi.page * pixabayApi.pageDetection()) {
-  // if(pixabayApi.checkPages){
+
+  if (!pixabayApi.checkPages()) {
+
     btnLoad.style.display = 'none';
-    // reset();
     Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
+
   } else {
     btnLoad.style.display = 'block';
     Notiflix.Notify.success(`'Hooray! We found ${data.totalHits} images.'`);
@@ -108,12 +109,12 @@ function updateGallery(data) {
 
 }
 
-//------
+//------завантажити додатково по кнопці---//
 
 async function handleLoadMore() {
-  pixabayApi.page += 1;
-  // let data;
+
   try {
+  pixabayApi.page += 1;
    const data = await pixabayApi.fetchPhotos();
 updateGallery(data);
   } catch (error) {

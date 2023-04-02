@@ -14,13 +14,13 @@ export class PixabayApi {
   page = 1;
   totalPages = 0;
 
-  pageDetection() {
-    return this.page * this.#BASE_SEARCH_PARAMS.per_page;
-  }
+  pageDetection(totalHits) {
+  return Math.ceil(totalHits / this.#BASE_SEARCH_PARAMS.per_page);
+}
 
  checkPages() {
-    return this.page < Math.ceil(this.totalPages/this.#BASE_SEARCH_PARAMS.per_page);
- }
+  return this.page < this.totalPages;
+}
 
   reset() {
     return this.page = 1;
